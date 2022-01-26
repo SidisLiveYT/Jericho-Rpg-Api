@@ -1,7 +1,7 @@
 const express = require('express')
 const { urlencoded, json } = require('body-parser')
 const cors = require('cors')
-const Database = require('../utils/database-utils')
+const Database = require('./database-utils')
 
 /**
  * Constant Values like Port , Express App , and IpAddress
