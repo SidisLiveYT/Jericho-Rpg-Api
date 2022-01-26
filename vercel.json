@@ -2,14 +2,14 @@
   "version": 2,
   "builds": [
     {
-      "src": "./sources/functions/Api.js",
+      "src": "./sources/functions/index.js",
       "use": "@vercel/node"
     }
   ],
   "routes": [
     {
-      "src": "/sources/functions/(.*)",
-      "dest": "/sources/functions/"
+      "src": "/sources/(.*)",
+      "dest": "/sources/"
     }
   ]
 }
