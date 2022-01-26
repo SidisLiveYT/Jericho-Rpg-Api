@@ -1,7 +1,7 @@
 require('dotenv').config()
 
 const { PSDB } = require('planetscale-node')
-const conn = new PSDB('main')
+const conn = new PSDB('dev')
 class Database {
   static async createTables() {
     if (!conn)
