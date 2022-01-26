@@ -2,7 +2,7 @@
   "name": "jericho-rpg-api",
   "version": "1.0.0",
   "description": "Universal RPG based API for discord and other platforms",
-  "main": "./sources/functions/index.js",
+  "main": "./index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -22,7 +22,8 @@
     "cors": "^2.8.5",
     "dotenv": "^14.3.2",
     "express": "^4.17.2",
-    "mysql2": "^2.3.3"
+    "mysql2": "^2.3.3",
+    "planetscale-node": "^0.3.0"
   },
   "devDependencies": {
     "axios": "^0.25.0"

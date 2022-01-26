@@ -34,7 +34,6 @@ expressApp.get('/api/users/:userId', (req, res) => {
 })
 
 expressApp.get('/', async (req, res) => {
-  await Database.connect()
-  Database.createTables()
-  res.json({ statusCode: 200 })
+  const data = await Database.createTables()
+  res.json({ statusCode: 200, rawData: data })
 })
