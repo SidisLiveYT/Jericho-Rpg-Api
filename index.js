@@ -1,8 +1,19 @@
+require('dotenv').config()
+
 const express = require('express')
 const { urlencoded, json } = require('body-parser')
 const cors = require('cors')
-const Database = require('./database-utils')
+const usersRouter = require('./routes/users')
+const helmet = require('helmet')
+const path = require('path')
 
+/**
+ * Database Creation of Connection Pool for Database on API loading
+ */
+const Database = require('./database-utils')
+new Promise(async (resolve, reject) => {
+  resolve(await Database.connect(process.env))
+})
 /**
  * Constant Values like Port , Express App , and IpAddress
  */
@@ -10,11 +21,19 @@ const expressApp = express()
 const expressPort = 3000
 
 /**
+ * usage of routes/$files.js for express.<Router()>
+ */
+
+expressApp.use('/users', usersRouter)
+expressApp.use('/api/users', usersRouter)
+
+/**
  * Applying or Using Middleware on Default Express App
  */
 expressApp.use(cors())
 expressApp.use(urlencoded({ extended: false }))
 expressApp.use(json())
+expressApp.use(helmet())
 
 /**
  * Listening on expressPort with Default IpAddress
@@ -23,17 +42,9 @@ expressApp.listen(expressPort, () =>
   console.log(`Express App is listening on port : ${expressPort}`),
 )
 
-/**
- * Universal API to Fetch User's Data according to User's Id Number
- */
-expressApp.get('/api/users/:userId', (req, res) => {
-  var requestUserId =
-    req?.params?.userId ?? req?.query?.userId ?? req?.query?.Id
-  if (!requestUserId)
-    res.status(404).send('userId is not Found in Api Parameters')
-})
-
 expressApp.get('/', async (req, res) => {
-  const data = await Database.createTables()
-  res.json({ statusCode: 200, rawData: data })
+  res.sendFile(path.join(__dirname + '/public/index.html'))
+})
+expressApp.get('/api', async (req, res) => {
+  res.sendFile(path.join(__dirname + '/public/index.html'))
 })

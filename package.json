@@ -22,8 +22,9 @@
     "cors": "^2.8.5",
     "dotenv": "^14.3.2",
     "express": "^4.17.2",
+    "helmet": "^5.0.2",
     "mysql2": "^2.3.3",
-    "planetscale-node": "^0.3.0"
+    "path": "^0.12.7"
   },
   "devDependencies": {
     "axios": "^0.25.0"
