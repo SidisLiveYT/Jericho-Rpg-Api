@@ -1,3 +1,4 @@
+require('dotenv').config()
 const Mysql = require('mysql2/promise')
 
 class Database {
@@ -20,7 +21,7 @@ class Database {
    * @type {Object[]}
    */
   static rawTransactionData = undefined
-  static async connect(databaseEnvs) {
+  static async connect(databaseEnvs = process.env) {
     Database.mysqlDatabaseConnections = Mysql.createPool({
       host: databaseEnvs.PLANETSCALE_DB_HOST,
       password: databaseEnvs.PLANETSCALE_DB_PASSWORD,
