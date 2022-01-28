@@ -1,5 +1,7 @@
 require('dotenv').config()
 
+const Mysql = require('mysql2/promise')
+
 class Database {
   /**
    * @type {Mysql.Pool}
@@ -21,15 +23,13 @@ class Database {
    */
   static rawTransactionData = undefined
 
-  static Mysql = undefined
-
   /**
    * @static connect() -> Database Connection Before initializing Api
    * @param {process.env} databaseEnvs Enviornment Variables for Database Connection from Vercel
    * @returns {Promise<Mysql.Pool>} Returns Pool of Connections for Query and execute methods
    */
-  static async connect(databaseEnvs = process.env, Mysql) {
-    Database.mysqlDatabaseConnections = Mysql.createPool({
+  static async connect(databaseEnvs = process.env) {
+    MysqlDatabaseConnections = Mysql.createPool({
       host: databaseEnvs.PLANETSCALE_DB_HOST,
       password: databaseEnvs.PLANETSCALE_DB_PASSWORD,
       database: databaseEnvs.PLANETSCALE_DB,
@@ -39,9 +39,8 @@ class Database {
       connectionLimit: 20,
       queueLimit: 0,
     })
-    Database.Mysql = Mysql
     await Database.refresh()
-    return Database.mysqlDatabaseConnections ?? undefined
+    return MysqlDatabaseConnections ?? undefined
   }
 
   /**
@@ -78,8 +77,8 @@ class Database {
           rawUserData?.userId,
           rawUserData?.userName,
           rawUserData?.secretPassword,
-          Database.Mysql.raw(rawUserData?.wallet),
-          rawUserData?.avatarUrl ??  Database.Mysql.raw('NULL'),
+          Mysql.raw(rawUserData?.wallet),
+          rawUserData?.avatarUrl ?? Mysql.raw('NULL'),
         ],
       )
       return !!processedSqlResponse
@@ -266,28 +265,28 @@ class Database {
     if (typeof type !== 'string') return undefined
     if (['all', 'users'].includes(type?.toLowerCase()?.trim())) {
       Database.rawUsersData = await Database.__rawQuery('select * from ?', [
-        Database.Mysql.raw('rpgUsers'),
+        Mysql.raw('rpgUsers'),
       ])
     }
     if (['all', 'bots'].includes(type?.toLowerCase()?.trim()))
       Database.rawBotsData = await Database.__rawQuery('SELECT * FROM ?', [
-        Database.Mysql.raw('rpgBots'),
+        Mysql.raw('rpgBots'),
       ])
     if (['all', 'transactions'].includes(type?.toLowerCase()?.trim()))
       Database.rawTransactionData = await Database.__rawQuery(
         'SELECT * FROM ?',
-        [ Database.Mysql.raw('userTransactions')],
+        [Mysql.raw('userTransactions')],
       )
     return undefined
   }
   static async __rawQuery(sqlString, valuesArray = undefined) {
-    if (!Database.mysqlDatabaseConnections)
+    if (!MysqlDatabaseConnections)
       throw TypeError('Invalid Mysql Connection is Detected')
     sqlString =
       valuesArray && Array.isArray(valuesArray) && valuesArray.length > 0
-        ?  Database.Mysql.format(sqlString, valuesArray)
+        ? Mysql.format(sqlString, valuesArray)
         : sqlString
-    const [rawRows] = await Database.mysqlDatabaseConnections.execute(sqlString)
+    const [rawRows] = await MysqlDatabaseConnections.execute(sqlString)
     return rawRows
   }
 }

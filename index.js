@@ -12,7 +12,7 @@ const path = require('path')
  */
 const Database = require('./databaseWorkloads.js')
 new Promise(async (resolve, reject) => {
-  resolve(await Database.connect(process.env, Mysql))
+  resolve(await Database.connect(process.env))
 })
 /**
  * Constant Values like Port , Express App , and IpAddress
