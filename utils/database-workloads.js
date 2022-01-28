@@ -1,6 +1,6 @@
 require('dotenv').config()
 
-const Mysql = require('mysql')
+const Mysql = require('mysql2/promise')
 
 class Database {
   /**
@@ -286,7 +286,7 @@ class Database {
       valuesArray && Array.isArray(valuesArray) && valuesArray.length > 0
         ? Mysql.format(sqlString, valuesArray)
         : sqlString
-    const [rawRows] = Database.mysqlDatabaseConnections.query(sqlString)
+    const [rawRows] = await Database.mysqlDatabaseConnections.execute(sqlString)
     return rawRows
   }
 }

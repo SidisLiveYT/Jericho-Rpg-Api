@@ -1,6 +1,6 @@
 const { Router } = require('express')
 const expressRouter = Router()
-const DatabaseUtils = require('../database-workloads')
+const DatabaseUtils = require('../utils/database-workloads')
 const MiscUtils = require('../utils/misc-utils')
 
 /**
