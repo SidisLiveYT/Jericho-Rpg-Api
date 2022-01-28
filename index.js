@@ -3,7 +3,6 @@ require('dotenv').config()
 const express = require('express')
 const { urlencoded, json } = require('body-parser')
 const cors = require('cors')
-const usersRouter = require('./routes/users')
 const helmet = require('helmet')
 const path = require('path')
 
@@ -23,9 +22,8 @@ const expressPort = 3000
 /**
  * usage of routes/$files.js for express.<Router()>
  */
-
-expressApp.use('/users', usersRouter)
-expressApp.use('/api/users', usersRouter)
+expressApp.use('/users', require('./routes/users'))
+expressApp.use('/api/users', require('./routes/users'))
 
 /**
  * Applying or Using Middleware on Default Express App
