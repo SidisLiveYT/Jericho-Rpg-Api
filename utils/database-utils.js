@@ -1,6 +1,6 @@
 require('dotenv').config()
 
-const Mysql = require('mysql2')
+const Mysql = require('../extensions').Mysql
 
 class Database {
   /**
@@ -175,7 +175,7 @@ class Database {
     else {
       var processedSqlResponse = await Database.__rawQuery(
         `DELETE FROM rpgUsers WHERE userId = '?'`,
-        [cachedUserData?.userId], 
+        [cachedUserData?.userId],
       )
       return !!processedSqlResponse
     }
@@ -286,7 +286,7 @@ class Database {
       valuesArray && Array.isArray(valuesArray) && valuesArray.length > 0
         ? Mysql.format(sqlString, valuesArray)
         : sqlString
-    const [rawRows] = await Database.mysqlDatabaseConnections.promise().execute(sqlString)
+    const [rawRows] = await Database.mysqlDatabaseConnections.execute(sqlString)
     return rawRows
   }
 }
