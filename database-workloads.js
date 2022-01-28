@@ -1,6 +1,6 @@
 require('dotenv').config()
 
-const Mysql = require('../extensions').Mysql
+const Mysql = require('mysql2/promise')
 
 class Database {
   /**
