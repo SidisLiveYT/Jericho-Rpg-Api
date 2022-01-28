@@ -21,6 +21,12 @@ class Database {
    * @type {Object[]}
    */
   static rawTransactionData = undefined
+
+  /**
+   * @static connect() -> Database Connection Before initializing Api
+   * @param {process.env} databaseEnvs Enviornment Variables for Database Connection from Vercel
+   * @returns {Promise<Mysql.Pool>} Returns Pool of Connections for Query and execute methods
+   */
   static async connect(databaseEnvs = process.env) {
     Database.mysqlDatabaseConnections = Mysql.createPool({
       host: databaseEnvs.PLANETSCALE_DB_HOST,
@@ -36,12 +42,19 @@ class Database {
     return Database.mysqlDatabaseConnections ?? undefined
   }
 
+  /**
+   * @static createUser()- >
+   * @param {Object} rawUserData
+   * @returns {Promise<Booelan | void>}
+   */
+
   static async createUser(rawUserData) {
     if (
       !(
         rawUserData?.userId &&
         rawUserData?.userName &&
         rawUserData?.avatarUrl &&
+        rawUserData?.secretPassword &&
         rawUserData?.wallet
       )
     )
@@ -58,10 +71,11 @@ class Database {
       throw new Error('User is already present in Jericho-Rpg-Api Database')
     else {
       var processedSqlResponse = await Database.__rawQuery(
-        'INSERT INTO rpgUsers (userId,userName,wallet,avatarUrl) VALUES(?,?,?,?)',
+        'INSERT INTO rpgUsers (userId,userName,secretPassword,wallet,avatarUrl) VALUES(?,?,?,?,?)',
         [
           rawUserData?.userId,
           rawUserData?.userName,
+          rawUserData?.secretPassword,
           Mysql.raw(rawUserData?.wallet),
           rawUserData?.avatarUrl ?? Mysql.raw('NULL'),
         ],
@@ -70,10 +84,22 @@ class Database {
     }
   }
 
+  /**
+   * @static getUser() -> Fetching User Data from Api Database After Aggressive Checks
+   * @param {Object} rawUserData Raw Data for Checks like userId , userName and secretPassword
+   * @returns {Object} Fetched User Data and Returns to Api Requesting User
+   */
+
   static async getUser(rawUserData) {
-    if (!(rawUserData?._userId || rawUserData?._userName))
+    if (
+      !(
+        rawUserData?._userId ||
+        rawUserData?._userName ||
+        rawUserData?._secretPassword
+      )
+    )
       throw TypeError(
-        'Invalid Raw User Data like userId or userName is Detected',
+        'Invalid Raw User Data like userId , userName or secretPassword is Detected',
       )
 
     var cachedUserData = await Database.__rawDataFind(
@@ -91,7 +117,91 @@ class Database {
       )
     if (!cachedUserData)
       throw Error('No User was Found in Jericho-Rpg-Api Database')
-    return cachedUserData ?? undefined
+    else if (
+      !(
+        cachedUserData?.secretPassword &&
+        cachedUserData?.secretPassword === rawUserData?._secretPassword
+      )
+    )
+      throw Error('Invalid/Wrong Password is Detected for Getting User Data')
+    return (
+      Database.#__parseOutputData(cachedUserData ?? undefined, [
+        'secretPassword',
+      ]) ?? undefined
+    )
+  }
+
+  /**
+   * @static deleteUser() -> Deleting User Data from Api Database After Aggressive Checks
+   * @param {Object} rawUserData Raw Data for Checks like userId , userName and secretPassword
+   * @returns {Object} Deletes User Data and Returns to Api Requesting User
+   */
+
+  static async deleteUser(rawUserData) {
+    if (
+      !(
+        rawUserData?._userId ||
+        rawUserData?._userName ||
+        rawUserData?._secretPassword
+      )
+    )
+      throw TypeError(
+        'Invalid Raw User Data like userId , userName or secretPassword is Detected',
+      )
+
+    var cachedUserData = await Database.__rawDataFind(
+      'users',
+      'userId',
+      rawUserData?._userId,
+      true,
+    )
+    if (!cachedUserData)
+      cachedUserData = await Database.__rawDataFind(
+        'users',
+        'userName',
+        rawUserData?._userName,
+        false,
+      )
+    if (!cachedUserData)
+      throw Error('No User was Found in Jericho-Rpg-Api Database')
+    else if (
+      !(
+        cachedUserData?.secretPassword &&
+        cachedUserData?.secretPassword === rawUserData?._secretPassword
+      )
+    )
+      throw Error('Invalid/Wrong Password is Detected for Getting User Data')
+    else {
+      var processedSqlResponse = await Database.__rawQuery(
+        `DELETE FROM rpgUsers WHERE userId = '?'`,
+        [cachedUserData?.userId], 
+      )
+      return !!processedSqlResponse
+    }
+  }
+
+  /**
+   * @private
+   * @static #__parseOutputData() -> parse Output with Ignoring Some Values
+   * @param {Object} rawData rawData in Structued Format
+   * @param {string[]} ignoreArray Ignoring keys for Parsing
+   * @returns {Object} Returns cooked Strucutred Value after Parsing
+   */
+
+  static #__parseOutputData(rawData, ignoreArray = []) {
+    if (!(rawData && !Array.isArray(rawData) && typeof rawData === 'object'))
+      return undefined
+    var ObjectEntries = Object.entries(rawData)
+    var cookedData = {}
+    for (let count = 0, len = ObjectEntries.length; count < len; ++count) {
+      if (
+        ObjectEntries[count] &&
+        ObjectEntries[count][0] &&
+        !ignoreArray.includes(ObjectEntries[count][0]?.toLowerCase()?.trim())
+      )
+        cookedData[ObjectEntries[count]] = ObjectEntries[count][1]
+    }
+    return cookedData
   }
 
   /**

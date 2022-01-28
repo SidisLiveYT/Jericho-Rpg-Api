@@ -10,7 +10,7 @@ const path = require('path')
 /**
  * Database Creation of Connection Pool for Database on API loading
  */
-const Database = require('./database-utils')
+const Database = require('./utils/database-utils')
 new Promise(async (resolve, reject) => {
   resolve(await Database.connect(process.env))
 })
