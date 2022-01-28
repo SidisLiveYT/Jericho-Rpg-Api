@@ -1,5 +1,6 @@
 require('dotenv').config()
 
+const Mysql = require('mysql2/promise')
 const express = require('express')
 const { urlencoded, json } = require('body-parser')
 const cors = require('cors')
@@ -9,9 +10,9 @@ const path = require('path')
 /**
  * Database Creation of Connection Pool for Database on API loading
  */
-const Database = require('./database-workloads.js')
+const Database = require('./databaseWorkloads.js')
 new Promise(async (resolve, reject) => {
-  resolve(await Database.connect(process.env))
+  resolve(await Database.connect(process.env, Mysql))
 })
 /**
  * Constant Values like Port , Express App , and IpAddress

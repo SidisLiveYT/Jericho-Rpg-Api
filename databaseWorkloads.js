@@ -1,7 +1,5 @@
 require('dotenv').config()
 
-const Mysql = require('mysql2/promise')
-
 class Database {
   /**
    * @type {Mysql.Pool}
@@ -23,12 +21,14 @@ class Database {
    */
   static rawTransactionData = undefined
 
+  static Mysql = undefined
+
   /**
    * @static connect() -> Database Connection Before initializing Api
    * @param {process.env} databaseEnvs Enviornment Variables for Database Connection from Vercel
    * @returns {Promise<Mysql.Pool>} Returns Pool of Connections for Query and execute methods
    */
-  static async connect(databaseEnvs = process.env) {
+  static async connect(databaseEnvs = process.env, Mysql) {
     Database.mysqlDatabaseConnections = Mysql.createPool({
       host: databaseEnvs.PLANETSCALE_DB_HOST,
       password: databaseEnvs.PLANETSCALE_DB_PASSWORD,
@@ -39,6 +39,7 @@ class Database {
       connectionLimit: 20,
       queueLimit: 0,
     })
+    Database.Mysql = Mysql
     await Database.refresh()
     return Database.mysqlDatabaseConnections ?? undefined
   }
@@ -77,8 +78,8 @@ class Database {
           rawUserData?.userId,
           rawUserData?.userName,
           rawUserData?.secretPassword,
-          Mysql.raw(rawUserData?.wallet),
-          rawUserData?.avatarUrl ?? Mysql.raw('NULL'),
+          Database.Mysql.raw(rawUserData?.wallet),
+          rawUserData?.avatarUrl ??  Database.Mysql.raw('NULL'),
         ],
       )
       return !!processedSqlResponse
@@ -265,17 +266,17 @@ class Database {
     if (typeof type !== 'string') return undefined
     if (['all', 'users'].includes(type?.toLowerCase()?.trim())) {
       Database.rawUsersData = await Database.__rawQuery('select * from ?', [
-        Mysql.raw('rpgUsers'),
+        Database.Mysql.raw('rpgUsers'),
       ])
     }
     if (['all', 'bots'].includes(type?.toLowerCase()?.trim()))
       Database.rawBotsData = await Database.__rawQuery('SELECT * FROM ?', [
-        Mysql.raw('rpgBots'),
+        Database.Mysql.raw('rpgBots'),
       ])
     if (['all', 'transactions'].includes(type?.toLowerCase()?.trim()))
       Database.rawTransactionData = await Database.__rawQuery(
         'SELECT * FROM ?',
-        [Mysql.raw('userTransactions')],
+        [ Database.Mysql.raw('userTransactions')],
       )
     return undefined
   }
@@ -284,7 +285,7 @@ class Database {
       throw TypeError('Invalid Mysql Connection is Detected')
     sqlString =
       valuesArray && Array.isArray(valuesArray) && valuesArray.length > 0
-        ? Mysql.format(sqlString, valuesArray)
+        ?  Database.Mysql.format(sqlString, valuesArray)
         : sqlString
     const [rawRows] = await Database.mysqlDatabaseConnections.execute(sqlString)
     return rawRows
