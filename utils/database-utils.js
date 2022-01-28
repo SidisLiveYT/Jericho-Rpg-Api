@@ -1,4 +1,5 @@
 require('dotenv').config()
+
 const Mysql = require('mysql2/promise')
 
 class Database {
