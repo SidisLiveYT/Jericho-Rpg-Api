@@ -29,7 +29,7 @@ class Database {
    * @returns {Promise<Mysql.Pool>} Returns Pool of Connections for Query and execute methods
    */
   static async connect(databaseEnvs = process.env) {
-    MysqlDatabaseConnections = Mysql.createPool({
+    Database.mysqlDatabaseConnections = Mysql.createPool({
       host: databaseEnvs.PLANETSCALE_DB_HOST,
       password: databaseEnvs.PLANETSCALE_DB_PASSWORD,
       database: databaseEnvs.PLANETSCALE_DB,
@@ -40,7 +40,7 @@ class Database {
       queueLimit: 0,
     })
     await Database.refresh()
-    return MysqlDatabaseConnections ?? undefined
+    return Database.mysqlDatabaseConnections ?? undefined
   }
 
   /**
@@ -280,13 +280,13 @@ class Database {
     return undefined
   }
   static async __rawQuery(sqlString, valuesArray = undefined) {
-    if (!MysqlDatabaseConnections)
+    if (!Database.mysqlDatabaseConnections)
       throw TypeError('Invalid Mysql Connection is Detected')
     sqlString =
       valuesArray && Array.isArray(valuesArray) && valuesArray.length > 0
         ? Mysql.format(sqlString, valuesArray)
         : sqlString
-    const [rawRows] = await MysqlDatabaseConnections.execute(sqlString)
+    const [rawRows] = await Database.mysqlDatabaseConnections.execute(sqlString)
     return rawRows
   }
 }
